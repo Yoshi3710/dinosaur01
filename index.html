@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
 <meta name="theme-color" content="#dff7ef" />
 <title>恐竜アイランド｜探そう！宝物</title>
+<meta name="app-version" content="2026-08-26-inapp-scanner-v1" />
 <style>
   :root{
     --ink:#214239;
@@ -125,6 +126,32 @@
   .footprint-game.optional .foot{animation:pop .45s ease both}
   .footprint-game.optional .foot:nth-child(2){animation-delay:.08s}.footprint-game.optional .foot:nth-child(3){animation-delay:.16s}
 
+  /* --- In-app QR scanner: keeps the adventure on one page --- */
+  .scan-launch{margin:12px 0 8px;padding:12px;background:#fff;border:1px solid #d5e9e2;border-radius:20px;box-shadow:0 8px 20px rgba(33,66,57,.09);text-align:center}
+  .scan-main-btn{width:100%;border:0;border-radius:16px;padding:15px 18px;background:linear-gradient(180deg,#39a97b,#268c64);color:#fff;font-weight:900;font-size:18px;box-shadow:0 7px 14px rgba(38,140,100,.23);cursor:pointer}
+  .scan-main-btn:active{transform:translateY(1px)}
+  .scan-main-btn:disabled{opacity:.55;cursor:wait}
+  .scan-note{margin:7px 4px 0;color:#516b62;font-size:12px;font-weight:800;line-height:1.5}
+  .scan-note b{color:#247a59}
+  .scanner-overlay{position:fixed;inset:0;z-index:220;display:none;background:#102b24;color:#fff;align-items:stretch;justify-content:center;padding:calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom))}
+  .scanner-overlay.show{display:flex}
+  .scanner-shell{width:min(100%,680px);display:flex;flex-direction:column;min-height:0}
+  .scanner-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 2px 10px}
+  .scanner-head strong{font-size:17px}.scanner-close{border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.1);color:#fff;border-radius:999px;padding:8px 13px;font-weight:900}
+  .scanner-view{position:relative;flex:1;min-height:280px;max-height:68dvh;border-radius:22px;overflow:hidden;background:#071711;border:2px solid rgba(255,255,255,.18)}
+  #scanVideo{width:100%;height:100%;object-fit:cover;display:block;background:#071711}
+  #scanCanvas{display:none}
+  .scanner-frame{position:absolute;left:12%;right:12%;top:18%;bottom:18%;border:4px solid rgba(255,255,255,.96);border-radius:20px;box-shadow:0 0 0 9999px rgba(0,0,0,.18);pointer-events:none}
+  .scanner-frame:before,.scanner-frame:after{content:"";position:absolute;left:8%;right:8%;height:3px;background:#65f0b3;box-shadow:0 0 12px rgba(101,240,179,.8)}
+  .scanner-frame:before{top:50%;animation:scanline 1.9s ease-in-out infinite alternate}.scanner-frame:after{display:none}
+  @keyframes scanline{from{transform:translateY(-90px)}to{transform:translateY(90px)}}
+  .scanner-status{margin:10px 2px 0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.1);font-weight:900;text-align:center;line-height:1.45;min-height:44px}
+  .scanner-status.error{background:#5f2626}.scanner-status.ok{background:#1d684d}
+  .scanner-sub{margin:7px 7px 0;text-align:center;color:#d3e6df;font-size:11.5px;line-height:1.5;font-weight:700}
+  .scanner-retry{display:none;margin:9px auto 0;border:0;border-radius:14px;padding:11px 16px;background:#fff;color:#1f5f49;font-weight:900}
+  .scanner-retry.show{display:block}
+  @media(max-width:430px){.scan-main-btn{font-size:17px;padding:14px}.scanner-view{min-height:330px}.scanner-frame{left:10%;right:10%;top:20%;bottom:20%}}
+
 </style>
 </head>
 <body>
@@ -137,7 +164,7 @@
 
   <section class="guide" aria-label="ちーちゃんの案内">
     <img src="data:image/webp;base64,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" alt="ナビゲーターのちーちゃん" />
-    <div id="guideText" class="speech"><strong>ちーちゃん：</strong> 地図の恐竜をタップして、かくれている場所のヒントを見てね！</div>
+    <div id="guideText" class="speech"><strong>ちーちゃん：</strong> 地図の恐竜をタップしてヒントを見よう！見つけたら「QRを読み取る」を押してね！</div>
   </section>
 
   <div class="instruction">
@@ -173,8 +200,13 @@
       <button id="treasureChest" class="chest" aria-label="宝箱をあける"><span class="lid"></span><span class="box"></span><span class="band"></span><span class="lock"></span></button>
       <div id="chestLabel" class="chest-label">宝箱をタップ！</div>
     </div>
-    <div class="legend"><span>🦖 6か所をさがす</span><span>📱 QRで地図GET</span><span>🗺️ 6枚で完成</span></div>
+    <div class="legend"><span>🦖 6か所をさがす</span><span>📷 アプリ内でQRを読む</span><span>🗺️ 6枚で完成</span></div>
   </main>
+
+  <section class="scan-launch" aria-label="QRコード読み取り">
+    <button id="scanBtn" class="scan-main-btn" type="button">📷 QRを読み取る</button>
+    <p class="scan-note"><b>2枚目からは必ずこのボタン。</b><br>iPhoneのカメラアプリには戻らず、この地図画面のまま読み取ります。</p>
+  </section>
 
   <p class="footer-note">進みぐあいは、このスマホに自動で保存されます。</p>
   <div id="saveWarning" class="save-warning">⚠ このブラウザでは進行状況を保存できない可能性があります。イベントではSafariまたはChromeの通常モードで開いてください。</div>
@@ -189,6 +221,21 @@
 <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-live="polite">
   <div id="modal" class="modal"></div>
 </div>
+
+<div id="scannerOverlay" class="scanner-overlay" role="dialog" aria-modal="true" aria-label="QRコード読み取り">
+  <div class="scanner-shell">
+    <div class="scanner-head"><strong>恐竜QRを読み取ろう</strong><button id="scannerClose" class="scanner-close" type="button">やめる</button></div>
+    <div class="scanner-view">
+      <video id="scanVideo" playsinline muted autoplay></video>
+      <canvas id="scanCanvas"></canvas>
+      <div class="scanner-frame" aria-hidden="true"></div>
+    </div>
+    <div id="scannerStatus" class="scanner-status">カメラを準備しています…</div>
+    <button id="scannerRetry" class="scanner-retry" type="button">もう一度カメラを開く</button>
+    <div class="scanner-sub">QRを白い枠の中に入れてください。読み取ると自動で地図に戻ります。</div>
+  </div>
+</div>
+
 <div id="confetti" class="confetti" aria-hidden="true"></div>
 
 <script>
@@ -228,6 +275,13 @@
   const confetti = document.getElementById('confetti');
   const mapEl = document.querySelector('.map');
   const saveWarning = document.getElementById('saveWarning');
+  const scanBtn = document.getElementById('scanBtn');
+  const scannerOverlay = document.getElementById('scannerOverlay');
+  const scannerClose = document.getElementById('scannerClose');
+  const scannerRetry = document.getElementById('scannerRetry');
+  const scannerStatus = document.getElementById('scannerStatus');
+  const scanVideo = document.getElementById('scanVideo');
+  const scanCanvas = document.getElementById('scanCanvas');
 
   function blankState(){ return {found:[], key:false, intro:false}; }
 
@@ -326,9 +380,9 @@
     } else if(left===0){
       guideText.innerHTML='<strong>ちーちゃん：</strong> 6枚がつながって大きな地図が完成！宝箱をタップしてね！';
     } else if(state.found.length>0){
-      guideText.innerHTML=`<strong>ちーちゃん：</strong> いい調子！あと <b>${left}まい</b>。開いた地図はもう閉じないよ！`;
+      guideText.innerHTML=`<strong>ちーちゃん：</strong> いい調子！あと <b>${left}まい</b>。次もこの画面の <b>「QRを読み取る」</b> から読んでね！`;
     } else {
-      guideText.innerHTML='<strong>ちーちゃん：</strong> 地図の恐竜をタップして、かくれている場所のヒントを見てね！';
+      guideText.innerHTML='<strong>ちーちゃん：</strong> 地図の恐竜をタップしてヒントを見よう！見つけたら、この画面の <b>「QRを読み取る」</b> を押してね！';
     }
   }
 
@@ -337,12 +391,12 @@
   overlay.addEventListener('click',e=>{if(e.target===overlay) closeModal();});
 
   function showIntro(){
-    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>恐竜アイランドへ<br>ようこそ！</h2><p>わたしはナビゲーターの <b>ちーちゃん</b>。<br>6頭の恐竜を見つけて、宝の地図を完成させよう！</p><div class="steps"><div class="step"><b>1</b><span>地図の恐竜をタップしてヒントを見る</span></div><div class="step"><b>2</b><span>会場でその恐竜を見つけてQRを読み込む</span></div><div class="step"><b>3</b><span>QRを読むと、その地図がすぐ開く</span></div><div class="step"><b>4</b><span>6枚集めると宝箱が出現！</span></div></div><button class="main-btn" id="startBtn">冒険をはじめる！</button>`);
+    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>恐竜アイランドへ<br>ようこそ！</h2><p>わたしはナビゲーターの <b>ちーちゃん</b>。<br>6頭の恐竜を見つけて、宝の地図を完成させよう！</p><div class="steps"><div class="step"><b>1</b><span>地図の恐竜をタップしてヒントを見る</span></div><div class="step"><b>2</b><span>会場でその恐竜を見つける</span></div><div class="step"><b>3</b><span><b>この画面の「QRを読み取る」</b>を押してQRを読む</span></div><div class="step"><b>4</b><span>同じ地図画面のまま地図が開く。6枚で宝箱が出現！</span></div></div><div class="hint-box">📱 最初のSTARTだけiPhoneカメラでOK。<br><b>恐竜QRはアプリ内カメラで読んでね！</b></div><button class="main-btn" id="startBtn">冒険をはじめる！</button>`);
     document.getElementById('startBtn').onclick=()=>{state.intro=true;writeState();closeModal();};
   }
 
   function showHelp(){
-    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>あそびかた</h2><div class="steps"><div class="step"><b>🦖</b><span>白い地図の恐竜をタップ</span></div><div class="step"><b>💡</b><span>名前と「どこにいる？」のヒントを見る</span></div><div class="step"><b>📱</b><span>会場で見つけた恐竜のQRを読み込む</span></div><div class="step"><b>🗺️</b><span>QRを読むと対応する地図がすぐ開き、その後は閉じません</span></div><div class="step"><b>🔑</b><span>6枚が1つの大きな地図になり、宝箱からカギをGET！</span></div></div><button class="main-btn" id="closeHelp">わかった！</button>`);
+    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>あそびかた</h2><div class="steps"><div class="step"><b>🦖</b><span>白い地図の恐竜をタップ</span></div><div class="step"><b>💡</b><span>名前と「どこにいる？」のヒントを見る</span></div><div class="step"><b>📷</b><span>恐竜を見つけたら、<b>この画面の「QRを読み取る」</b>を押す</span></div><div class="step"><b>🗺️</b><span>読み取り後も同じ画面。対応する地図が開き、一度開いた地図は閉じません</span></div><div class="step"><b>🔑</b><span>6枚が1つの大きな地図になり、宝箱からカギをGET！</span></div></div><div class="hint-box">⚠ 恐竜QRをiPhone標準カメラで読む必要はありません。</div><button class="main-btn" id="closeHelp">わかった！</button>`);
     document.getElementById('closeHelp').onclick=closeModal;
   }
 
@@ -407,6 +461,191 @@
     document.getElementById('keyClose').onclick=closeModal;
   }
 
+
+  // ---- In-app QR scanning: never navigates away from this page ----
+  const TOKEN_MAP = {
+    'DINOSAUR01:TREX':'trex',
+    'DINOSAUR01:TRICERATOPS':'triceratops',
+    'DINOSAUR01:STEGO':'stego',
+    'DINOSAUR01:BRACHIO':'brachio',
+    'DINOSAUR01:PTERA':'ptera',
+    'DINOSAUR01:ANKYLO':'ankylo'
+  };
+  let scannerStream=null;
+  let scannerRAF=0;
+  let scannerActive=false;
+  let scannerBusy=false;
+  let scannerLastFrame=0;
+  let scannerLastPayload='';
+  let scannerLastPayloadAt=0;
+  let qrLibraryPromise=null;
+
+  function loadExternalScript(src){
+    return new Promise((resolve,reject)=>{
+      const el=document.createElement('script');
+      el.src=src; el.async=true;
+      el.onload=()=>resolve();
+      el.onerror=()=>{el.remove();reject(new Error('load failed'));};
+      document.head.appendChild(el);
+    });
+  }
+
+  async function ensureQrLibrary(){
+    if(typeof window.jsQR==='function') return true;
+    if(qrLibraryPromise) return qrLibraryPromise;
+    qrLibraryPromise=(async()=>{
+      const sources=[
+        'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js',
+        'https://unpkg.com/jsqr@1.4.0/dist/jsQR.js'
+      ];
+      for(const src of sources){
+        try{
+          await loadExternalScript(src);
+          if(typeof window.jsQR==='function') return true;
+        }catch(e){}
+      }
+      throw new Error('QR reader library unavailable');
+    })();
+    return qrLibraryPromise;
+  }
+
+  function resolveScannedPayload(payload){
+    const text=String(payload||'').trim();
+    if(!text) return null;
+    const upper=text.toUpperCase();
+    if(TOKEN_MAP[upper]) return {type:'piece',id:TOKEN_MAP[upper]};
+    if(upper==='DINOSAUR01:START') return {type:'start'};
+    try{
+      const u=new URL(text);
+      const path=u.pathname.replace(/\/+$/,'');
+      if(u.hostname.toLowerCase()!=='yoshi3710.github.io' || path!=='/dinosaur01') return null;
+      const id=resolveScanPiece(u.searchParams);
+      if(id && validIds.has(id)) return {type:'piece',id};
+      if(!u.searchParams.has('piece') && !u.searchParams.has('get')) return {type:'start'};
+    }catch(e){}
+    return null;
+  }
+
+  function setScannerStatus(message,type=''){
+    scannerStatus.textContent=message;
+    scannerStatus.classList.remove('error','ok');
+    if(type) scannerStatus.classList.add(type);
+  }
+
+  function stopScanner(){
+    scannerActive=false;
+    scannerBusy=false;
+    if(scannerRAF){cancelAnimationFrame(scannerRAF);scannerRAF=0;}
+    if(scannerStream){
+      scannerStream.getTracks().forEach(t=>{try{t.stop();}catch(e){}});
+      scannerStream=null;
+    }
+    try{scanVideo.pause();scanVideo.srcObject=null;}catch(e){}
+    scannerOverlay.classList.remove('show');
+    scannerRetry.classList.remove('show');
+    scanBtn.disabled=false;
+  }
+
+  async function startScanner(){
+    if(scannerActive) return;
+    scannerOverlay.classList.add('show');
+    scannerRetry.classList.remove('show');
+    scanBtn.disabled=true;
+    setScannerStatus('QR読み取りを準備しています…');
+    try{
+      if(!window.isSecureContext) throw new Error('secure-context');
+      if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('camera-unsupported');
+      await ensureQrLibrary();
+      scannerStream=await navigator.mediaDevices.getUserMedia({
+        audio:false,
+        video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}
+      });
+      scanVideo.srcObject=scannerStream;
+      scanVideo.setAttribute('playsinline','');
+      await scanVideo.play();
+      scannerActive=true;
+      scannerBusy=false;
+      scannerLastFrame=0;
+      setScannerStatus('QRコードを白い枠の中に入れてね');
+      scannerRAF=requestAnimationFrame(scanFrame);
+    }catch(err){
+      scannerActive=false;
+      scanBtn.disabled=false;
+      if(scannerStream){scannerStream.getTracks().forEach(t=>{try{t.stop();}catch(e){}});scannerStream=null;}
+      try{scanVideo.pause();scanVideo.srcObject=null;}catch(e){}
+      const denied=err && (err.name==='NotAllowedError' || err.name==='SecurityError');
+      if(denied){
+        setScannerStatus('カメラの使用が許可されていません。Safariのカメラ許可をONにしてください。','error');
+      }else if(String(err&&err.message)==='secure-context'){
+        setScannerStatus('カメラはHTTPSの公開ページでのみ使用できます。GitHub PagesのURLから開いてください。','error');
+      }else{
+        setScannerStatus('カメラを開始できませんでした。通信とカメラ設定を確認して、もう一度押してください。','error');
+      }
+      scannerRetry.classList.add('show');
+    }
+  }
+
+  function scanFrame(now){
+    if(!scannerActive) return;
+    scannerRAF=requestAnimationFrame(scanFrame);
+    if(scannerBusy || now-scannerLastFrame<140) return;
+    if(scanVideo.readyState<2 || !scanVideo.videoWidth || !scanVideo.videoHeight) return;
+    scannerLastFrame=now;
+    try{
+      const maxWidth=620;
+      const scale=Math.min(1,maxWidth/scanVideo.videoWidth);
+      const w=Math.max(240,Math.round(scanVideo.videoWidth*scale));
+      const h=Math.max(180,Math.round(scanVideo.videoHeight*scale));
+      if(scanCanvas.width!==w) scanCanvas.width=w;
+      if(scanCanvas.height!==h) scanCanvas.height=h;
+      const ctx=scanCanvas.getContext('2d',{willReadFrequently:true});
+      ctx.drawImage(scanVideo,0,0,w,h);
+      const img=ctx.getImageData(0,0,w,h);
+      const code=window.jsQR(img.data,w,h,{inversionAttempts:'attemptBoth'});
+      if(code && code.data) handleInAppScan(code.data);
+    }catch(e){
+      // A single bad frame must never stop the event. Continue scanning.
+    }
+  }
+
+  function handleInAppScan(payload){
+    if(scannerBusy) return;
+    const now=Date.now();
+    const raw=String(payload||'').trim();
+    if(raw===scannerLastPayload && now-scannerLastPayloadAt<1500) return;
+    scannerLastPayload=raw; scannerLastPayloadAt=now;
+    const resolved=resolveScannedPayload(raw);
+    if(!resolved){
+      setScannerStatus('これは恐竜アイランドのQRではないみたい。別のQRを読んでね。','error');
+      if(navigator.vibrate) navigator.vibrate(80);
+      return;
+    }
+    if(resolved.type==='start'){
+      setScannerStatus('これはSTART用QRだよ。恐竜のQRを読んでね！','error');
+      return;
+    }
+    const d=dinos.find(x=>x.id===resolved.id);
+    if(!d) return;
+    scannerBusy=true;
+    const isNew=!state.found.includes(d.id);
+    if(isNew) state.found.push(d.id);
+    state.intro=true;
+    writeState();       // Commit first: power loss / accidental close cannot undo acquisition.
+    renderPieces();     // Reveal the correct section on THIS SAME page immediately.
+    if(navigator.vibrate) navigator.vibrate([70,50,100]);
+    setScannerStatus(`${d.name}を読み取ったよ！ 地図を開いています…`,'ok');
+    setTimeout(()=>{
+      stopScanner();
+      showScanResult(d,isNew);
+    },260);
+  }
+
+  scanBtn.addEventListener('click',startScanner);
+  scannerClose.addEventListener('click',stopScanner);
+  scannerRetry.addEventListener('click',()=>{stopScanner();setTimeout(startScanner,60);});
+  // Load the QR decoder quietly while the child is reading the intro, so the first scan starts faster.
+  setTimeout(()=>{ensureQrLibrary().catch(()=>{});},700);
+
   function setupTest(params){
     if(!(params.has('test')||params.has('admin'))) return;
     const panel=document.getElementById('testPanel'); panel.classList.add('show');
@@ -465,7 +704,11 @@
   // Multiple tabs / back-forward cache / returning from camera all resync safely.
   window.addEventListener('storage',()=>{ syncFromStorage(); });
   window.addEventListener('pageshow',()=>{ syncFromStorage(); });
-  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) syncFromStorage(); });
+  window.addEventListener('pagehide',()=>{ if(scannerActive) stopScanner(); });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden){ if(scannerActive) stopScanner(); }
+    else syncFromStorage();
+  });
 })();
 </script>
 </body>
