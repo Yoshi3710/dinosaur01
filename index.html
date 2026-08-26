@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
 <meta name="theme-color" content="#dff7ef" />
 <title>恐竜アイランド｜探そう！宝物</title>
-<meta name="app-version" content="2026-08-26-inapp-scanner-v1" />
+<meta name="app-version" content="2026-08-26-inapp-scanner-v2-mobile-text" />
 <style>
   :root{
     --ink:#214239;
@@ -21,7 +21,7 @@
     --shadow:0 12px 28px rgba(33,66,57,.14);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;min-height:100%;background:linear-gradient(180deg,#f1fbf7 0,#e7f8f4 48%,#dff4fb 100%);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
+  html,body{margin:0;min-height:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;background:linear-gradient(180deg,#f1fbf7 0,#e7f8f4 48%,#dff4fb 100%);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",Meiryo,system-ui,sans-serif}
   body{min-height:100dvh;overflow-x:hidden}
   button{font:inherit;color:inherit}
   button:focus-visible{outline:4px solid rgba(46,156,112,.25);outline-offset:3px}
@@ -85,19 +85,18 @@
   .test-buttons button,.reset-btn{border:1px solid #cfe4da;background:#f3fbf7;border-radius:10px;padding:9px 5px;font-weight:800;font-size:12px}
   .reset-btn{margin-top:8px;width:100%;background:#fff3f1;border-color:#f1c9c2;color:#a34c40}
 
-  .overlay{position:fixed;inset:0;background:rgba(20,48,41,.42);display:none;align-items:center;justify-content:center;z-index:100;padding:16px;backdrop-filter:blur(4px)}
-  .overlay.show{display:flex;animation:fade .2s ease both}@keyframes fade{from{opacity:0}to{opacity:1}}
-  .modal{width:min(94vw,520px);max-height:88dvh;overflow:auto;background:#fff;border-radius:28px;padding:20px;box-shadow:0 24px 60px rgba(12,44,35,.25);text-align:center;position:relative}
+  .overlay{position:fixed;inset:0;background:rgba(20,48,41,.62);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+  .overlay.show{display:flex}
+  .modal{width:min(94vw,520px);max-height:88dvh;overflow:auto;background:#fff;border-radius:28px;padding:20px;box-shadow:0 24px 60px rgba(12,44,35,.25);text-align:center;position:relative;isolation:isolate;opacity:1}
   .modal .chi{width:125px;height:125px;object-fit:contain;margin:-4px auto 0;display:block}
-  .modal h2{margin:2px 0 8px;font-size:clamp(23px,6vw,32px);line-height:1.2}
-  .modal p{margin:8px 0 12px;line-height:1.65;font-weight:700;color:#4f675f}
+  .modal h2{margin:2px 0 8px;font-size:clamp(23px,6vw,32px);line-height:1.22;color:#173f35;font-weight:900;line-break:strict;word-break:normal}
+  .modal p{margin:8px 0 12px;line-height:1.65;font-weight:700;color:#405a52;line-break:strict;word-break:normal}
   .main-btn{width:100%;border:0;border-radius:16px;padding:14px 15px;background:linear-gradient(135deg,#2f9d70,#5bc58e);color:#fff;font-size:17px;font-weight:900;box-shadow:0 8px 18px rgba(46,156,112,.25)}
   .sub-btn{width:100%;border:0;background:#edf8f3;border-radius:14px;padding:12px;font-weight:900;color:#34775c;margin-top:8px}
   .steps{display:grid;gap:8px;text-align:left;margin:12px 0 16px}
   .step{display:grid;grid-template-columns:36px 1fr;gap:9px;align-items:center;background:#f5fbf8;border-radius:15px;padding:9px 11px;font-weight:800;font-size:14px}
-  .step b{width:32px;height:32px;display:grid;place-items:center;background:#dff4e9;border-radius:50%;font-size:17px}
-  .hint-dino{height:100px;margin:5px auto 4px}.hint-box{background:#fff7dc;border:2px solid #f2d97c;border-radius:17px;padding:12px;margin:10px 0 13px;font-weight:900;color:#765a18}
-  .status-line{font-size:13px;color:#6a7c76;font-weight:800}
+  .step > b{width:32px;height:32px;display:grid;place-items:center;background:#dff4e9;border-radius:50%;font-size:17px;flex:none}.step span{line-height:1.5;color:#294a40;line-break:strict;word-break:normal}.step span strong{color:#126444;font-weight:900}
+  .hint-dino{height:108px;margin:5px auto 4px;display:grid;place-items:center;overflow:hidden}.hint-dino svg{display:block;width:148px;height:108px;max-width:52vw;max-height:108px}.dino-name{color:#0d5a42!important;font-weight:900!important;font-size:clamp(25px,7vw,34px)!important}.hint-box{background:#fff0ad;border:2px solid #d8a524;border-radius:17px;padding:13px 14px;margin:10px 0 13px;font-weight:900;font-size:15px;line-height:1.6;color:#493500;line-break:strict;word-break:normal}.status-line{font-size:14px;color:#3f5d53!important;font-weight:900!important}
 
   .footprint-game{display:flex;justify-content:center;gap:14px;margin:10px 0 16px;min-height:74px;align-items:center}
   .foot{border:0;background:transparent;font-size:50px;transform:rotate(-18deg);transition:.15s;filter:drop-shadow(0 5px 4px rgba(33,66,57,.13))}
@@ -114,7 +113,7 @@
   @keyframes fall{to{transform:translate(var(--drift),105vh) rotate(760deg);opacity:.9}}
 
   @media (max-width:430px){
-    .app{padding-left:9px;padding-right:9px}.guide{grid-template-columns:68px 1fr;padding:9px 10px}.guide img{width:64px;height:64px}.speech{font-size:12.5px}.map-wrap{padding:7px;border-radius:22px}.map{border-radius:16px}.piece::after{width:22px;height:22px;font-size:12px;right:6px;top:5px}.remaining{padding:8px 9px;font-size:12px}.key-badge{font-size:12px;padding:8px 9px}.brand h1{font-size:21px}.legend{gap:5px}.legend span{font-size:10.5px;padding:5px 7px}}
+    .app{padding-left:9px;padding-right:9px}.guide{grid-template-columns:68px 1fr;padding:9px 10px}.guide img{width:64px;height:64px}.speech{font-size:13px;line-height:1.5}.map-wrap{padding:7px;border-radius:22px}.map{border-radius:16px}.piece::after{width:22px;height:22px;font-size:12px;right:6px;top:5px}.remaining{padding:8px 9px;font-size:12px}.key-badge{font-size:12px;padding:8px 9px}.brand h1{font-size:21px}.legend{gap:5px}.legend span{font-size:10.5px;padding:5px 7px}.modal{width:calc(100vw - 24px);max-height:calc(100dvh - 28px);padding:16px 15px 17px;border-radius:22px}.modal .chi{width:96px;height:96px}.modal h2{font-size:25px;margin:1px 0 7px}.modal p{font-size:14px;line-height:1.55}.steps{gap:7px;margin:10px 0 12px}.step{grid-template-columns:34px minmax(0,1fr);gap:8px;padding:8px 10px;font-size:13.5px}.step > b{width:30px;height:30px;font-size:16px}.hint-box{font-size:14.5px;padding:11px 12px}.dino-name{font-size:27px!important}.status-line{font-size:13.5px!important}}
 
   /* Production reliability additions */
   .map.complete .gridlines{opacity:0;transition:opacity .35s ease}
@@ -391,17 +390,17 @@
   overlay.addEventListener('click',e=>{if(e.target===overlay) closeModal();});
 
   function showIntro(){
-    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>恐竜アイランドへ<br>ようこそ！</h2><p>わたしはナビゲーターの <b>ちーちゃん</b>。<br>6頭の恐竜を見つけて、宝の地図を完成させよう！</p><div class="steps"><div class="step"><b>1</b><span>地図の恐竜をタップしてヒントを見る</span></div><div class="step"><b>2</b><span>会場でその恐竜を見つける</span></div><div class="step"><b>3</b><span><b>この画面の「QRを読み取る」</b>を押してQRを読む</span></div><div class="step"><b>4</b><span>同じ地図画面のまま地図が開く。6枚で宝箱が出現！</span></div></div><div class="hint-box">📱 最初のSTARTだけiPhoneカメラでOK。<br><b>恐竜QRはアプリ内カメラで読んでね！</b></div><button class="main-btn" id="startBtn">冒険をはじめる！</button>`);
+    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>恐竜アイランドへ<br>ようこそ！</h2><p>わたしはナビゲーターの <b>ちーちゃん</b>。<br>6頭の恐竜を見つけて、宝の地図を完成させよう！</p><div class="steps"><div class="step"><b>1</b><span>地図の恐竜をタップしてヒントを見る</span></div><div class="step"><b>2</b><span>会場でその恐竜を見つける</span></div><div class="step"><b>3</b><span><strong>この画面の「QRを読み取る」</strong>を押してQRを読む</span></div><div class="step"><b>4</b><span>同じ地図画面のまま地図が開く。6枚で宝箱が出現！</span></div></div><div class="hint-box">📱 STARTはiPhoneのカメラでOK。<br><b>恐竜QRは、この画面のカメラで読んでね！</b></div><button class="main-btn" id="startBtn">冒険をはじめる！</button>`);
     document.getElementById('startBtn').onclick=()=>{state.intro=true;writeState();closeModal();};
   }
 
   function showHelp(){
-    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>あそびかた</h2><div class="steps"><div class="step"><b>🦖</b><span>白い地図の恐竜をタップ</span></div><div class="step"><b>💡</b><span>名前と「どこにいる？」のヒントを見る</span></div><div class="step"><b>📷</b><span>恐竜を見つけたら、<b>この画面の「QRを読み取る」</b>を押す</span></div><div class="step"><b>🗺️</b><span>読み取り後も同じ画面。対応する地図が開き、一度開いた地図は閉じません</span></div><div class="step"><b>🔑</b><span>6枚が1つの大きな地図になり、宝箱からカギをGET！</span></div></div><div class="hint-box">⚠ 恐竜QRをiPhone標準カメラで読む必要はありません。</div><button class="main-btn" id="closeHelp">わかった！</button>`);
+    openModal(`<img class="chi" src="${CHI}" alt="ちーちゃん"><h2>あそびかた</h2><div class="steps"><div class="step"><b>🦖</b><span>白い地図の恐竜をタップ</span></div><div class="step"><b>💡</b><span>名前と「どこにいる？」のヒントを見る</span></div><div class="step"><b>📷</b><span>恐竜を見つけたら、<strong>この画面の「QRを読み取る」</strong>を押す</span></div><div class="step"><b>🗺️</b><span>読み取り後も同じ画面。対応する地図が開き、一度開いた地図は閉じません</span></div><div class="step"><b>🔑</b><span>6枚が1つの大きな地図になり、宝箱からカギをGET！</span></div></div><div class="hint-box">⚠ 恐竜QRをiPhone標準カメラで読む必要はありません。</div><button class="main-btn" id="closeHelp">わかった！</button>`);
     document.getElementById('closeHelp').onclick=closeModal;
   }
 
   function showHint(d){
-    openModal(`<div class="hint-dino">${dinoSVG(d.icon,d.color)}</div><h2>${d.name}</h2><p class="status-line">この恐竜はどこにいるかな？</p><div class="hint-box">💡 ${d.hint}</div><button class="main-btn" id="hintClose">探しにいく！</button>`);
+    openModal(`<div class="hint-dino">${dinoSVG(d.icon,d.color)}</div><h2 class="dino-name">${d.name}</h2><p class="status-line">この恐竜はどこにいるかな？</p><div class="hint-box">💡 ${d.hint}</div><button class="main-btn" id="hintClose">探しにいく！</button>`);
     document.getElementById('hintClose').onclick=closeModal;
   }
 
